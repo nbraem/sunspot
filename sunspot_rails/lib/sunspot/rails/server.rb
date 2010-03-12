@@ -76,6 +76,13 @@ module Sunspot
         configuration.solr_jar || super
       end
 
+      #
+      # Solr start jar
+      #
+      def solr_jar
+          configuration.jar || super
+      end
+
       # 
       # Port on which to run Solr
       #
