@@ -110,6 +110,7 @@ module Sunspot #:nodoc:
             alias_method :index, :solr_index unless method_defined? :index
             alias_method :index_orphans, :solr_index_orphans unless method_defined? :index_orphans
             alias_method :clean_index_orphans, :solr_clean_index_orphans unless method_defined? :clean_index_orphans
+            alias_method :index_updated_after, :solr_index_updated_after unless method_defined? :index_updated_after
           end
         end
         # 
@@ -277,6 +278,39 @@ module Sunspot #:nodoc:
             end.solr_remove_from_index
           end
         end
+
+	def solr_index_updated_after(created_updated_after, opts={})
+	  options = { 
+	    :batch_commit => true, 
+	    :include => [], 
+	    :first_id => 0
+	    }.merge(opts)
+	  unless options[:batch_size]
+	    Sunspot.index!(all(
+	      :include => options[:include], 
+	      :conditions => ["created_at >= ? or updated_at >= ?", created_updated_after, created_updated_after]))
+	  else
+	    offset = 0
+	    counter = 1
+	    record_count = count(:conditions => ["created_at >= ? or updated_at >= ?", created_updated_after, created_updated_after])
+
+	    last_id = options[:first_id]
+	    while(offset < record_count)
+	      benchmark options[:batch_size], counter do
+		conditions = ["(created_at >= ? or updated_at >= ?) and #{table_name}.#{primary_key} > ?", 
+		  created_updated_after, created_updated_after, last_id]
+		records = all(:include => options[:include], :conditions => conditions, :limit => options[:batch_size], :order => primary_key)
+		Sunspot.index(records)
+		last_id = records.last.id
+	      end
+
+	      Sunspot.commit if options[:batch_commit]
+	      offset += options[:batch_size]
+	      counter += 1
+	    end
+	    Sunspot.commit unless options[:batch_commit]
+	  end
+	end
 
         # 
         # Classes that have been defined as searchable return +true+ for this
