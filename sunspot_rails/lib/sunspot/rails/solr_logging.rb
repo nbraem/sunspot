@@ -39,7 +39,7 @@ module Sunspot
 
       def format_log_entry(message, dump = nil)
 	begin
-	  bColorize = Rails::Subscriber.colorize_logging
+	  bColorize = ::Rails::Subscriber.colorize_logging
 	rescue NameError # Rails 2
 	  bColorize = ActiveRecord::Base.colorize_logging
 	end
