@@ -1,4 +1,4 @@
-%w(query_facet field_facet date_facet facet_row hit
+%w(abstract_search query_facet field_facet date_facet facet_row hit
    highlight).each do |file|
   require File.join(File.dirname(__FILE__), 'search', file)
 end
@@ -10,8 +10,7 @@ module Sunspot
   # Instances of Search are returned by the Sunspot.search and
   # Sunspot.new_search methods.
   #
-  class Search
-    attr_reader :query #:nodoc:
+  class Search < AbstractSearch
     # 
     # Retrieve all facet objects defined for this search, in order they were
     # defined. To retrieve an individual facet by name, use #facet()
@@ -19,97 +18,9 @@ module Sunspot
     attr_reader :facets
 
     def initialize(connection, setup, query, configuration) #:nodoc:
-      @connection, @setup, @query = connection, setup, query
-      @query.paginate(1, configuration.pagination.default_per_page)
+      super(connection, setup, query, configuration)
       @facets = []
       @facets_by_name = {}
-    end
-
-    #
-    # Execute the search on the Solr instance and store the results. If you
-    # use Sunspot#search() to construct your searches, there is no need to call
-    # this method as it has already been called. If you use
-    # Sunspot#new_search(), you will need to call this method after building the
-    # query.
-    #
-    def execute
-      reset
-      params = @query.to_params
-      @solr_result = @connection.select(params)
-      self
-    end
-    alias_method :execute!, :execute #:nodoc: deprecated
-
-    # 
-    # Get the collection of results as instantiated objects. If WillPaginate is
-    # available, the results will be a WillPaginate::Collection instance; if
-    # not, it will be a vanilla Array.
-    #
-    # If not all of the results referenced by the Solr hits actually exist in
-    # the data store, Sunspot will only return the results that do exist.
-    #
-    # ==== Returns
-    #
-    # WillPaginate::Collection or Array:: Instantiated result objects
-    #
-    def results
-      @results ||= maybe_will_paginate(verified_hits.map { |hit| hit.instance })
-    end
-
-    # 
-    # Access raw Solr result information. Returns a collection of Hit objects
-    # that contain the class name, primary key, keyword relevance score (if
-    # applicable), and any stored fields.
-    #
-    # ==== Options (options)
-    #
-    # :verify::
-    #   Only return hits that reference objects that actually exist in the data
-    #   store. This causes results to be eager-loaded from the data store,
-    #   unlike the normal behavior of this method, which only loads the
-    #   referenced results when Hit#result is first called.
-    #
-    # ==== Returns
-    #
-    # Array:: Ordered collection of Hit objects
-    #
-    def hits(options = {})
-      if options[:verify]
-        verified_hits
-      else
-        @hits ||=
-          maybe_will_paginate(
-            solr_response['docs'].map do |doc|
-              Hit.new(doc, highlights_for(doc), distance_for(doc), self)
-            end
-          )
-      end
-    end
-    alias_method :raw_results, :hits
-
-    #
-    # Convenience method to iterate over hit and result objects. Block is
-    # yielded a Sunspot::Server::Hit instance and a Sunspot::Server::Result
-    # instance.
-    #
-    # Note that this method iterates over verified hits (see #hits method
-    # for more information).
-    #
-    def each_hit_with_result
-      verified_hits.each do |hit|
-        yield(hit, hit.result)
-      end
-    end
-
-    # 
-    # The total number of documents matching the query parameters
-    #
-    # ==== Returns
-    #
-    # Integer:: Total matching documents
-    #
-    def total
-      @total ||= solr_response['numFound']
     end
 
     # 
@@ -247,43 +158,12 @@ module Sunspot
 
     private
 
-    def solr_response
-      @solr_response ||= @solr_result['response']
-    end
-
     def dsl
       DSL::Search.new(self, @setup)
     end
 
-    def highlights_for(doc)
-      if @solr_result['highlighting']
-        @solr_result['highlighting'][doc['id']]
-      end
-    end
-
-    def distance_for(doc)
-      if @solr_result['distances']
-        @solr_result['distances'][doc['id']]
-      end
-    end
-
-    def verified_hits
-      @verified_hits ||= maybe_will_paginate(hits.select { |hit| hit.instance })
-    end
-
-    def maybe_will_paginate(collection)
-      if defined?(WillPaginate::Collection)
-        WillPaginate::Collection.create(@query.page, @query.per_page, total) do |pager|
-          pager.replace(collection)
-        end
-      else
-        collection
-      end
-    end
-    
-    # Clear out all the cached ivars so the search can be called again.
-    def reset
-      @results = @hits = @verified_hits = @total = @solr_response = @doc_ids = nil
+    def execute_request(params)
+      @connection.select(params)
     end
 
     def add_facet(name, facet)
