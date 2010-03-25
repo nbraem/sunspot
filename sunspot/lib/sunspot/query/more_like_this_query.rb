@@ -52,6 +52,10 @@ module Sunspot
 	@options["mlt.boost"] = should_boost
       end
 
+      def set_interesting_terms(value)
+	@options["mlt.interestingTerms"] = value
+      end
+
       def paginate(page, per_page)
         if @pagination
           @pagination.page = page

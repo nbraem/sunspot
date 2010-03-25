@@ -21,6 +21,27 @@ module Sunspot
       @setup.all_more_like_this_fields.each { |field| @query.add_field(field) }
     end
 
+    def interesting_terms
+      if @solr_result['interestingTerms']
+	if @solr_result['interestingTerms'].last.is_a? Float
+	  # interestingTerms: ["body_mlt_textv:two", 1.0, "body_mlt_textv:three", 1.0]
+	  @interesting_terms ||= @solr_result['interestingTerms'].each_slice(2).map do |interesting_term, score|
+	    field, term = interesting_term.match(/(.*)_.+:(.*)/)[1..2]
+	    InterestingTerm.new(field, term, score)
+	  end
+	else
+	  @interesting_terms ||= @solr_result['interestingTerms'].map do |term|
+	    InterestingTerm.new(term)
+	  end
+	end
+      end
+    end
+
+    def reset
+      super
+      @interesting_terms = nil
+    end
+
     private
 
     # override
@@ -31,5 +52,16 @@ module Sunspot
     def execute_request(params)
       @connection.mlt(params)
     end
+    
+    class InterestingTerm
+      attr_reader :term, :field, :score
+
+      def initialize(term, field = nil, score = 1.0)
+	@term = term
+	@field = field
+	@score = score
+      end
+    end
+
   end
 end

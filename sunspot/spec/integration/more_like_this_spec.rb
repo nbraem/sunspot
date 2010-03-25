@@ -20,6 +20,18 @@ describe 'more_like_this' do
     end.results.should == @posts[2..3]
   end
 
+  it 'should parse interesting terms' do
+    Sunspot.more_like_this(@posts.first) do 
+      fields :body_mlt
+      interesting_terms :list
+    end.interesting_terms.length.should == 2
+
+    Sunspot.more_like_this(@posts.first) do 
+      fields :body_mlt
+      interesting_terms :details
+    end.interesting_terms.length.should == 2
+  end
+
   it 'should return results for string fields' do
     Sunspot.more_like_this(@posts.first) do 
       fields :tags
