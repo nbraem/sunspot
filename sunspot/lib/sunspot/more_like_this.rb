@@ -27,7 +27,7 @@ module Sunspot
 	  # interestingTerms: ["body_mlt_textv:two", 1.0, "body_mlt_textv:three", 1.0]
 	  @interesting_terms ||= @solr_result['interestingTerms'].each_slice(2).map do |interesting_term, score|
 	    field, term = interesting_term.match(/(.*)_.+:(.*)/)[1..2]
-	    InterestingTerm.new(field, term, score)
+	    InterestingTerm.new(term, field, score)
 	  end
 	else
 	  @interesting_terms ||= @solr_result['interestingTerms'].map do |term|
