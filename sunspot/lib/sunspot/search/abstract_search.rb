@@ -236,6 +236,12 @@ module Sunspot
           @solr_result['highlighting'][doc['id']]
         end
       end
+
+      def explain_for(doc) #:nodoc:
+	if @solr_result['debug']
+	  @solr_result['debug']['explain'][doc['id']]
+	end
+      end
   
       private
   
@@ -258,7 +264,7 @@ module Sunspot
       def solr_docs
         solr_response['docs']
       end
-  
+
       def verified_hits
         @verified_hits ||= paginate_collection(super)
       end

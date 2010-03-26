@@ -11,17 +11,24 @@ describe Sunspot::Search::HitEnumerable do
     before do
       subject.stub(:solr_docs).and_return([{"id" => "Post 1", "score" => 3.14}])
       subject.stub(:highlights_for)
+      subject.stub(:explain_for)
     end
 
     it "retrieves the raw Solr response from #solr_docs and constructs Hit objects" do
       Sunspot::Search::Hit.should_receive(:new).
-                           with({"id" => "Post 1", "score" => 3.14}, anything, anything)
+                           with({"id" => "Post 1", "score" => 3.14}, anything, anything, anything)
 
       subject.hits
     end
 
     it "constructs Hit objects with highlights" do
       subject.should_receive(:highlights_for).with({"id" => "Post 1", "score" => 3.14})
+
+      subject.hits
+    end
+
+    it "constructs Hit objects with explain" do
+      subject.should_receive(:explain_for).with({"id" => "Post 1", "score" => 3.14})
 
       subject.hits
     end

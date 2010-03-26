@@ -42,6 +42,22 @@ module Sunspot
         @params[:"mlt.boost"] = should_boost
       end
 
+      def debug=(debug_on)
+	if debug_on
+	  @params[:debugQuery] = true
+	else
+	  @params.delete :debugQuery
+	end
+      end
+
+      def debug=(debug_on)
+	if debug_on
+	  @params[:debugQuery] = true
+	else
+	  @params.delete :debugQuery
+	end
+      end
+
       def to_params
         params = Sunspot::Util.deep_merge(
           @params,

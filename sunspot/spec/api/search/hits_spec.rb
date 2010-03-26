@@ -144,4 +144,32 @@ describe 'hits', :type => :search do
     stub_full_results('instance' => User.new, 'role_ids_ims' => %w(1 4 5))
     session.search(User).hits.first.stored(:role_ids).should == [1, 4, 5]
   end
+
+  it 'should return explain' do
+    post = Post.new
+    stub_results(post)
+    connection.response['debug'] = {
+      "explain" => { "Post #{post.id}" => "explanation" }
+    }
+    session.search(Post).hits.first.explain.should == "explanation"
+  end
+
+  it 'should return nil if no debug' do
+    stub_results(Post.new)
+    session.search(Post).hits.first.explain.should be_nil
+  end
+
+  it 'should return explain' do
+    post = Post.new
+    stub_results(post)
+    connection.response['debug'] = {
+      "explain" => { "Post #{post.id}" => "explanation" }
+    }
+    session.search(Post).hits.first.explain.should == "explanation"
+  end
+
+  it 'should return nil if no debug' do
+    stub_results(Post.new)
+    session.search(Post).hits.first.explain.should be_nil
+  end
 end

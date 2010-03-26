@@ -31,6 +31,10 @@ module Sunspot
         @search.highlights_for(doc)
       end
 
+      def explain_for(doc)
+        @search.explain_for(doc)
+      end
+
       def solr_docs
         @doclist['docs']
       end

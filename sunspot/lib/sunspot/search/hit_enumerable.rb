@@ -5,7 +5,7 @@ module Sunspot
         if options[:verify]
           verified_hits
         elsif solr_docs
-          solr_docs.map { |d| Hit.new(d, highlights_for(d), self) }
+          solr_docs.map { |d| Hit.new(d, highlights_for(d), explain_for(d), self) }
         else
           []
         end

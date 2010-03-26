@@ -23,12 +23,17 @@ module Sunspot
       #
       attr_reader :score
       #
+      # If debugQuery is turned on, this is the string that solr returns to
+      # explaing the match score. Otherwise, it's nil.
+      # 
+      attr_reader :explain
 
       attr_writer :result #:nodoc:
 
       def initialize(raw_hit, highlights, search) #:nodoc:
         @class_name, @primary_key = *raw_hit['id'].match(/([^ ]+) (.+)/)[1..2]
         @score = raw_hit['score']
+	@explain = explain
         @search = search
         @stored_values = raw_hit
         @stored_cache = {}
