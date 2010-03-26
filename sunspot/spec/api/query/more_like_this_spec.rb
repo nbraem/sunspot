@@ -62,6 +62,7 @@ describe 'more_like_this' do
       maximum_word_length 4
       maximum_query_terms 5
       boost_by_relevance false
+      interesting_terms :details
     end
     connection.should have_last_search_with(:"mlt.mintf" => 1)
     connection.should have_last_search_with(:"mlt.mindf" => 2)
@@ -69,6 +70,7 @@ describe 'more_like_this' do
     connection.should have_last_search_with(:"mlt.maxwl" => 4)
     connection.should have_last_search_with(:"mlt.maxqt" => 5)
     connection.should have_last_search_with(:"mlt.boost" => false)
+    connection.should have_last_search_with(:"mlt.interestingTerms" => :details)
   end
 
   it 'should accept short options' do

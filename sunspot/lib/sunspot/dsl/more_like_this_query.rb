@@ -51,6 +51,10 @@ module Sunspot
         @query.more_like_this.boost_by_relevance = should_boost
       end
       alias_method :boost, :boost_by_relevance
+
+      def interesting_terms(value)
+	@query.more_like_this.interesting_terms = value
+      end
     end
   end
 end

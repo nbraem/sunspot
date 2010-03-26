@@ -20,4 +20,14 @@ describe 'more_like_this' do
       fields :body
     end.results.to_set.should == @posts[2..3].to_set
   end
+
+  it 'should return interesting terms' do
+    Sunspot.more_like_this(@posts.first) do 
+      interesting_terms :list
+    end.interesting_terms.length.should == 4
+
+    Sunspot.more_like_this(@posts.first) do 
+      interesting_terms :details
+    end.interesting_terms.length.should == 4
+  end
 end

@@ -41,6 +41,10 @@ module Sunspot
         @params[:"mlt.boost"] = should_boost
       end
 
+      def interesting_terms=(value)
+	@params[:"mlt.interestingTerms"] = value
+      end
+
       def to_params
         params = Sunspot::Util.deep_merge(
           @params,
