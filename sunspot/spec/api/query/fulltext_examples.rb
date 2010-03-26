@@ -1,95 +1,121 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-describe 'fulltext query', :type => :query do
+shared_examples_for 'fulltext query' do
   it 'searches by keywords' do
-    session.search Post do
+    search do
       keywords 'keyword search'
     end
     connection.should have_last_search_with(:q => 'keyword search')
   end
 
   it 'ignores keywords if empty' do
-    session.search Post do
+    search do
       keywords ''
     end
     connection.should_not have_last_search_with(:defType => 'dismax')
   end
 
   it 'ignores keywords if nil' do
-    session.search Post do
+    search do
       keywords nil
     end
     connection.should_not have_last_search_with(:defType => 'dismax')
   end
 
   it 'ignores keywords with only whitespace' do
-    session.search Post do
+    search do
       keywords "  \t"
     end
     connection.should_not have_last_search_with(:defType => 'dismax')
   end
 
   it 'gracefully ignores keywords block if keywords ignored' do
-    session.search Post do
+    search do
       keywords(nil) { fields(:title) }
     end
   end
 
   it 'sets default query parser to dismax when keywords used' do
-    session.search Post do
+    search do
       keywords 'keyword search'
     end
     connection.should have_last_search_with(:defType => 'dismax')
   end
 
   it 'searches types in filter query if keywords used' do
-    session.search Post do
+    search do
       keywords 'keyword search'
     end
     connection.should have_last_search_with(:fq => ['type:Post'])
   end
 
+  describe 'with multiple keyword components' do
+    before :each do
+      session.search Post do
+        keywords 'first search', :fields => :title
+        keywords 'second search'
+      end
+    end
+
+    it 'puts specified keywords in subquery' do
+      subqueries(:q).map { |subquery| subquery[:v] }.should ==
+        ['first search', 'second search']
+    end
+
+    it 'puts specified dismax parameters in subquery' do
+      subqueries(:q).first[:qf].should == 'title_text'
+    end
+
+    it 'puts default dismax parameters in subquery' do
+      subqueries(:q).last[:qf].split(' ').sort.should == %w(backwards_title_text body_textsv tags_textv title_text)
+    end
+
+    it 'puts automatic dismax parameters in subquery' do
+      subqueries(:q).each { |subquery| subquery[:fl].should == '* score' }
+    end
+  end
+
   it 'searches all text fields for searched class' do
-    search = session.search Post do
+    search = search do
       keywords 'keyword search'
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(backwards_title_text body_mlt_textv body_texts title_text)
+    connection.searches.last[:qf].split(' ').sort.should == %w(backwards_title_text body_textsv tags_textv title_text)
   end
 
   it 'searches both stored and unstored text fields' do
-    session.search Post, Namespaced::Comment do
+    search Post, Namespaced::Comment do
       keywords 'keyword search'
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(author_name_text backwards_title_text body_mlt_textv body_text body_texts title_text)
+    connection.searches.last[:qf].split(' ').sort.should == %w(author_name_text backwards_title_text body_text body_textsv tags_textv title_text)
   end
 
   it 'searches only specified text fields when specified' do
-    session.search Post do
+    search do
       keywords 'keyword search', :fields => [:title, :body]
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(body_texts title_text)
+    connection.searches.last[:qf].split(' ').sort.should == %w(body_textsv title_text)
   end
 
   it 'excludes text fields when instructed' do
-    session.search Post do
+    search do
       keywords 'keyword search' do
         exclude_fields :backwards_title, :body_mlt
       end
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(body_texts title_text)
+    connection.searches.last[:qf].split(' ').sort.should == %w(body_textsv tags_textv title_text)
   end
 
   it 'assigns boost to fields when specified' do
-    session.search Post do
+    search do
       keywords 'keyword search' do
         fields :title => 2.0, :body => 0.75
       end
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(body_texts^0.75 title_text^2.0)
+    connection.searches.last[:qf].split(' ').sort.should == %w(body_textsv^0.75 title_text^2.0)
   end
 
   it 'allows assignment of boosted and unboosted fields' do
-    session.search Post do
+    search do
       keywords 'keyword search' do
         fields :body, :title => 2.0
       end
@@ -97,26 +123,26 @@ describe 'fulltext query', :type => :query do
   end
 
   it 'searches both unstored and stored text field with same name when specified' do
-    session.search Post, Namespaced::Comment do
+    search Post, Namespaced::Comment do
       keywords 'keyword search', :fields => [:body]
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(body_text body_texts)
+    connection.searches.last[:qf].split(' ').sort.should == %w(body_text body_textsv)
   end
 
   it 'requests score when keywords used' do
-    session.search Post do
+    search do
       keywords 'keyword search'
     end
     connection.should have_last_search_with(:fl => '* score')
   end
 
   it 'does not request score when keywords not used' do
-    session.search Post
+    search Post
     connection.should_not have_last_search_with(:fl)
   end
 
   it 'sets phrase fields' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         phrase_fields :title => 2.0
       end
@@ -125,7 +151,7 @@ describe 'fulltext query', :type => :query do
   end
 
   it 'sets phrase fields with boost' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         phrase_fields :title => 1.5
       end
@@ -134,7 +160,7 @@ describe 'fulltext query', :type => :query do
   end
 
   it 'sets phrase slop from DSL' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         phrase_slop 2
       end
@@ -143,39 +169,39 @@ describe 'fulltext query', :type => :query do
   end
 
   it 'sets boost for certain fields without restricting fields' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         boost_fields :title => 1.5
       end
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(backwards_title_text body_mlt_textv body_texts title_text^1.5)
+    connection.searches.last[:qf].split(' ').sort.should == %w(backwards_title_text body_textsv tags_textv title_text^1.5)
   end
 
   it 'ignores boost fields that do not apply' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         boost_fields :bogus => 1.2, :title => 1.5
       end
     end
-    connection.searches.last[:qf].split(' ').sort.should == %w(backwards_title_text body_mlt_textv body_texts title_text^1.5)
+    connection.searches.last[:qf].split(' ').sort.should == %w(backwards_title_text body_textsv tags_textv title_text^1.5)
   end
 
   it 'sets default boost with default fields' do
-    session.search Photo do
+    search Photo do
       keywords 'great pizza'
     end
     connection.should have_last_search_with(:qf => 'caption_text^1.5')
   end
 
   it 'sets default boost with fields specified in options' do
-    session.search Photo do
+    search Photo do
       keywords 'great pizza', :fields => [:caption]
     end
     connection.should have_last_search_with(:qf => 'caption_text^1.5')
   end
 
   it 'sets default boost with fields specified in DSL' do
-    session.search Photo do
+    search Photo do
       keywords 'great pizza' do
         fields :caption
       end
@@ -184,7 +210,7 @@ describe 'fulltext query', :type => :query do
   end
 
   it 'overrides default boost when specified in DSL' do
-    session.search Photo do
+    search Photo do
       keywords 'great pizza' do
         fields :caption => 2.0
       end
@@ -193,18 +219,18 @@ describe 'fulltext query', :type => :query do
   end
 
   it 'creates boost query' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         boost 2.0 do
           with(:average_rating).greater_than(2.0)
         end
       end
     end
-    connection.should have_last_search_with(:bq => ['average_rating_f:[2\.0 TO *]^2.0'])
+    connection.should have_last_search_with(:bq => ['average_rating_ft:[2\.0 TO *]^2.0'])
   end
 
   it 'creates multiple boost queries' do
-    session.search Post do
+    search do
       keywords 'great pizza' do
         boost(2.0) do
           with(:average_rating).greater_than(2.0)
@@ -216,56 +242,56 @@ describe 'fulltext query', :type => :query do
     end
     connection.should have_last_search_with(
       :bq => [
-        'average_rating_f:[2\.0 TO *]^2.0',
+        'average_rating_ft:[2\.0 TO *]^2.0',
         'featured_b:true^1.5'
       ]
     )
   end
 
   it 'sends minimum match parameter from options' do
-    session.search Post do
+    search do
       keywords 'great pizza', :minimum_match => 2
     end
     connection.should have_last_search_with(:mm => 2)
   end
 
   it 'sends minimum match parameter from DSL' do
-    session.search Post do
+    search do
       keywords('great pizza') { minimum_match(2) }
     end
     connection.should have_last_search_with(:mm => 2)
   end
 
   it 'sends tiebreaker parameter from options' do
-    session.search Post do
+    search do
       keywords 'great pizza', :tie => 0.1
     end
     connection.should have_last_search_with(:tie => 0.1)
   end
 
   it 'sends tiebreaker parameter from DSL' do
-    session.search Post do
+    search do
       keywords('great pizza') { tie(0.1) }
     end
     connection.should have_last_search_with(:tie => 0.1)
   end
 
   it 'sends query phrase slop from options' do
-    session.search Post do
+    search do
       keywords 'great pizza', :query_phrase_slop => 2
     end
     connection.should have_last_search_with(:qs => 2)
   end
 
   it 'sends query phrase slop from DSL' do
-    session.search Post do
+    search do
       keywords('great pizza') { query_phrase_slop(2) }
     end
     connection.should have_last_search_with(:qs => 2)
   end
 
   it 'allows specification of a text field that only exists in one type' do
-    session.search Post, Namespaced::Comment do
+    search Post, Namespaced::Comment do
       keywords 'keywords', :fields => :author_name
     end
     connection.searches.last[:qf].should == 'author_name_text'
@@ -273,8 +299,16 @@ describe 'fulltext query', :type => :query do
 
   it 'raises Sunspot::UnrecognizedFieldError for nonexistant fields in keywords' do
     lambda do
-      session.search Post do
+      search do
         keywords :text, :fields => :bogus
+      end
+    end.should raise_error(Sunspot::UnrecognizedFieldError)
+  end
+
+  it 'raises Sunspot::UnrecognizedFieldError if a text field that does not exist for any type is specified' do
+    lambda do
+      search Post, Namespaced::Comment do
+        keywords 'fulltext', :fields => :bogus
       end
     end.should raise_error(Sunspot::UnrecognizedFieldError)
   end

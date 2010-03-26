@@ -32,15 +32,16 @@ end
 
 Sunspot.setup(Post) do
   text :title, :boost => 2
-  text :body, :stored => true
+  text :body, :stored => true, :more_like_this => true
   text :backwards_title do
     title.reverse if title
   end
+  text :tags, :more_like_this => true
   string :title, :stored => true
   integer :blog_id, :references => Blog
   integer :category_ids, :multiple => true
-  float :average_rating, :using => :ratings_average
-  time :published_at
+  float :average_rating, :using => :ratings_average, :trie => true
+  time :published_at, :trie => true
   date :expire_date
   boolean :featured, :using => :featured?
   string :sort_title do
@@ -53,8 +54,6 @@ Sunspot.setup(Post) do
     Time.now
   end
   coordinates :coordinates
-  text :body_mlt, :more_like_this => true, :using => :body
-  string :tags, :multiple => true, :more_like_this => true
 
   dynamic_string :custom_string, :stored => true
   dynamic_float :custom_float, :multiple => true, :using => :custom_fl

@@ -3,28 +3,27 @@ module Sunspot
     # 
     # Abstract class for function queries.
     #
-    class AbstractFunctionQuery 
+    class FunctionQuery 
+      include RSolr::Char
     end
 
     #
     # Function query which represents a constant.
     #
-    class ConstantFunctionQuery < AbstractFunctionQuery
+    class ConstantFunctionQuery < FunctionQuery
       def initialize(constant)
         @constant = constant
       end
 
       def to_s
-        @constant.is_a?(String) ? %Q("#{@constant}") : %Q(#{@constant})
+        Type.to_literal(@constant)
       end
     end
 
     #
     # Function query which represents a field.
     #
-    class FieldFunctionQuery < AbstractFunctionQuery
-      include RSolr::Char
-
+    class FieldFunctionQuery < FunctionQuery
       def initialize(field)
         @field = field
       end
@@ -37,9 +36,9 @@ module Sunspot
     #
     # Function query which represents an actual function invocation.
     # Takes a function name and arguments as parameters.
-    # Arguments are in turn AbstractFunctionQuery objects.
+    # Arguments are in turn FunctionQuery objects.
     #
-    class FunctionalFunctionQuery < AbstractFunctionQuery
+    class FunctionalFunctionQuery < FunctionQuery
       def initialize(function_name, function_args)
         @function_name, @function_args = function_name, function_args
       end

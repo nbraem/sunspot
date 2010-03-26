@@ -33,7 +33,7 @@ module Sunspot
         @stored_field_factories_cache[field_factory.name] << field_factory
       end
       if more_like_this
-	@more_like_this_field_factories_cache[field_factory.name] << field_factory
+        @more_like_this_field_factories_cache[field_factory.name] << field_factory
       end
     end
 
@@ -53,7 +53,7 @@ module Sunspot
         @stored_field_factories_cache[field_factory.name] << field_factory
       end
       if more_like_this
-	@more_like_this_field_factories_cache[field_factory.name] << field_factory
+        @more_like_this_field_factories_cache[field_factory.name] << field_factory
       end
     end
 
@@ -73,7 +73,7 @@ module Sunspot
         @stored_field_factories_cache[field_factory.name] << field_factory
       end
       if more_like_this
-	@more_like_this_field_factories_cache[field_factory.name] << field_factory
+        @more_like_this_field_factories_cache[field_factory.name] << field_factory
       end
     end
 
@@ -161,13 +161,9 @@ module Sunspot
     # Return one or more more_like_this fields (can be either attribute or text fields)
     # for the given name.
     #
-    def more_like_this_fields(field_name, dynamic_field_name = nil)
+    def more_like_this_fields(field_name)
       @more_like_this_field_factories_cache[field_name.to_sym].map do |field_factory|
-        if dynamic_field_name
-          field_factory.build(dynamic_field_name)
-        else
-          field_factory.build
-        end
+        field_factory.build
       end
     end
 
@@ -200,7 +196,7 @@ module Sunspot
     #
     def all_more_like_this_fields
       @more_like_this_field_factories_cache.values.map do |field_factories| 
-	field_factories.map { |field_factory| field_factory.build }
+        field_factories.map { |field_factory| field_factory.build }
       end.flatten
     end
 

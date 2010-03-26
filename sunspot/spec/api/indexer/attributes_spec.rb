@@ -6,11 +6,6 @@ describe 'indexing attribute fields', :type => :indexer do
     connection.should have_add_with(:title_ss => 'A Title')
   end
 
-  it 'should correctly index a more_like_this string attribute field' do
-    session.index(post(:tags => ['tag1', 'tag2']))
-    connection.should have_add_with(:tags_smv => ['tag1', 'tag2'])
-  end
-
   it 'should correctly index an integer attribute field' do
     session.index(post(:blog_id => 4))
     connection.should have_add_with(:blog_id_i => '4')
@@ -23,7 +18,7 @@ describe 'indexing attribute fields', :type => :indexer do
 
   it 'should correctly index a float attribute field' do
     session.index(post(:ratings_average => 2.23))
-    connection.should have_add_with(:average_rating_f => '2.23')
+    connection.should have_add_with(:average_rating_ft => '2.23')
   end
 
   it 'should correctly index a double attribute field' do
@@ -60,14 +55,14 @@ describe 'indexing attribute fields', :type => :indexer do
     session.index(
       post(:published_at => Time.parse('1983-07-08 05:00:00 -0400'))
     )
-    connection.should have_add_with(:published_at_d => '1983-07-08T09:00:00Z')
+    connection.should have_add_with(:published_at_dt => '1983-07-08T09:00:00Z')
   end
 
   it 'should correctly index a time field that\'s after 32-bit Y2K' do
     session.index(
       post(:published_at => DateTime.parse('2050-07-08 05:00:00 -0400'))
     )
-    connection.should have_add_with(:published_at_d => '2050-07-08T09:00:00Z')
+    connection.should have_add_with(:published_at_dt => '2050-07-08T09:00:00Z')
   end
 
   it 'should correctly index a date field' do
