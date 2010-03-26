@@ -44,11 +44,16 @@ module Sunspot
         end
       end
 
+      def set_debug(debug_on)
+	@debug = debug_on
+      end
+
       def to_params
         params = {}
         @components.each do |component|
           Sunspot::Util.deep_merge!(params, component.to_params)
         end
+	params[:debugQuery] = true if @debug
         @parameter_adjustment.call(params) if @parameter_adjustment
         params[:q] ||= '*:*'
         params

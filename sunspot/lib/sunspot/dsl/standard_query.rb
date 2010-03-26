@@ -116,6 +116,14 @@ module Sunspot
         # else
         super
       end
+
+      #
+      # Turn debug on or off. If true, passes debugQuery=true to solr.
+      # Enables explain on hits.
+      #
+      def debug(debug_on = true)
+	@query.set_debug(debug_on)
+      end
     end
   end
 end

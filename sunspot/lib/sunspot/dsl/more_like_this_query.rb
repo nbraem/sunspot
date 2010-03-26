@@ -55,6 +55,14 @@ module Sunspot
       def interesting_terms(value)
         @query.more_like_this.interesting_terms = value
       end
+
+      #
+      # Turn debug on or off. If true, passes debugQuery=true to solr.
+      # Enables explain on hits.
+      #
+      def debug(debug_on = true)
+        @query.set_debug(debug_on)
+      end
     end
   end
 end
