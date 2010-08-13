@@ -1,5 +1,4 @@
 require 'singleton'
-require 'geohash'
 
 module Sunspot
   # 
@@ -345,8 +344,6 @@ module Sunspot
     #   end
     #
     class LocationType < AbstractType
-      include GeoHash
-
       def indexed_name(name)
         "#{name}_s"
       end
