@@ -1,6 +1,6 @@
-=== Sunspot 1.1 ===
-* commitWithin (need solr-ruby support for this)
-* remove_all() should just use '*:*', since it's faster and cleaner
+=== Sunspot 1.1.x ===
+* commitWithin (needs support from RSolr, currently available in master)
+* commit options (non-blocking, etc.)
 
 === Someday ===
 * Shorthand arguments to Sunspot#search

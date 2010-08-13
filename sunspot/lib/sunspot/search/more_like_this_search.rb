@@ -16,6 +16,10 @@ module Sunspot
         super
       end
 
+      def request_handler
+        super || :mlt
+      end
+
       def interesting_terms
 	if @solr_result['interestingTerms']
 	  if @solr_result['interestingTerms'].last.is_a? Float
@@ -37,10 +41,6 @@ module Sunspot
       # override
       def dsl
         DSL::MoreLikeThisQuery.new(self, @query, @setup)
-      end
-
-      def execute_request(params)
-        @connection.mlt(params)
       end
     end
   end

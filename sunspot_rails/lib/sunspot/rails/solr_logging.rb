@@ -38,13 +38,13 @@ module Sunspot
       private
 
       def format_log_entry(message, dump = nil)
-	begin
-	  bColorize = ::Rails::Subscriber.colorize_logging
-	rescue NameError # Rails 2
-	  bColorize = ActiveRecord::Base.colorize_logging
-	end
-
-	if bColorize
+        log_subscriber =
+          begin
+            ::Rails::LogSubscriber
+          rescue NameError
+            ActiveRecord::Base
+          end
+        if log_subscriber.colorize_logging
           message_color, dump_color = "4;32;1", "0;1"
           log_entry = "  \e[#{message_color}m#{message}\e[0m   "
           log_entry << "\e[#{dump_color}m%#{String === dump ? 's' : 'p'}\e[0m" % dump if dump

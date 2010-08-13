@@ -39,7 +39,7 @@ shared_examples_for "scoped query" do
     search do
       with :featured, false
     end
-    connection.should have_last_search_including(:fq, 'featured_b:false')
+    connection.should have_last_search_including(:fq, 'featured_bs:false')
   end
 
   it 'scopes by less than match with float' do
@@ -75,13 +75,6 @@ shared_examples_for "scoped query" do
       with(:average_rating).between 2.0..4.0
     end
     connection.should have_last_search_including(:fq, 'average_rating_ft:[2\.0 TO 4\.0]')
-  end
-
-  it 'automatically sorts ranges in between matches' do
-    search do
-      with(:blog_id).between(4..2)
-    end
-    connection.should have_last_search_including(:fq, 'blog_id_i:[2 TO 4]')
   end
 
   it 'scopes by any match with integer' do

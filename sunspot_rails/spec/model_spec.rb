@@ -123,7 +123,7 @@ describe 'ActiveRecord mixin' do
     end
     
     it 'should use the include option on the data accessor when specified' do
-      Post.should_receive(:find).with(anything(), hash_including(:include => [:blog])).and_return([@post])
+      Post.should_receive(:all).with(hash_including(:include => [:blog])).and_return([@post])
       Post.search do
         with :title, 'Test Post'
         data_accessor_for(Post).include = [:blog]
@@ -131,14 +131,14 @@ describe 'ActiveRecord mixin' do
     end
 
     it 'should pass :include option from search call to data accessor' do
-      Post.should_receive(:find).with(anything(), hash_including(:include => [:blog])).and_return([@post])
+      Post.should_receive(:all).with(hash_including(:include => [:blog])).and_return([@post])
       Post.search(:include => [:blog]) do
         with :title, 'Test Post'
       end.results.should == [@post]
     end
     
     it 'should use the select option from search call to data accessor' do
-      Post.should_receive(:find).with(anything(), hash_including(:select => 'title, published_at')).and_return([@post])
+      Post.should_receive(:all).with(hash_including(:select => 'title, published_at')).and_return([@post])
       Post.search(:select => 'title, published_at') do
         with :title, 'Test Post'
       end.results.should == [@post]
@@ -149,7 +149,7 @@ describe 'ActiveRecord mixin' do
     end
     
     it 'should use the select option on the data accessor when specified' do
-      Post.should_receive(:find).with(anything(), hash_including(:select => 'title, published_at')).and_return([@post])
+      Post.should_receive(:all).with(hash_including(:select => 'title, published_at')).and_return([@post])
       Post.search do
         with :title, 'Test Post'
         data_accessor_for(Post).select = [:title, :published_at]
@@ -157,7 +157,7 @@ describe 'ActiveRecord mixin' do
     end
     
     it 'should not use the select option on the data accessor when not specified' do
-      Post.should_receive(:find).with(anything(), hash_not_including(:select)).and_return([@post])
+      Post.should_receive(:all).with(hash_not_including(:select)).and_return([@post])
       Post.search do
         with :title, 'Test Post'
       end.results.should == [@post]
@@ -177,7 +177,7 @@ describe 'ActiveRecord mixin' do
       post.location = Location.create!(:lat => 40.0, :lng => -70.0)
       post.save
       post.index!
-      Post.search { near([40.0, -70.0], :distance => 1) }.results.should == [post]
+      Post.search { with(:location).near(40.0, -70.0) }.results.should == [post]
     end
 
   end
@@ -347,7 +347,7 @@ describe 'ActiveRecord mixin' do
       it "should set the include option from the searchable options" do
         @blogs = Array.new(10) { Blog.create }
         Blog.should_receive(:all).with do |params|
-          params[:include].should == :posts
+          params[:include].should == [{ :posts => :author }, :comments]
           @blogs
         end.and_return(@blogs)
         Blog.reindex
@@ -369,10 +369,14 @@ describe 'ActiveRecord mixin' do
   describe "more_like_this()" do
     before(:each) do
       @posts = [
-	Post.create!(:title => 'Post123', :body => "one two three"),
-	Post.create!(:title => 'Post345', :body => "three four five"),
-	Post.create!(:title => 'Post456', :body => "four five six"),
-	Post.create!(:title => 'Post234', :body => "two three four"),
+        Post.create!(:title => 'Post123', :body => "one two three"),
+        Post.create!(:title => 'Post345', :body => "three four five"),
+        Post.create!(:title => 'Post456', :body => "four five six"),
+        Post.create!(:title => 'Post234', :body => "two three four"),
+      ]
+      @posts_with_auto = [
+        PostWithAuto.create!(:body => "one two three"),
+        PostWithAuto.create!(:body => "four five six")
       ]
       @posts.each { |p| p.index! }
     end
@@ -380,15 +384,20 @@ describe 'ActiveRecord mixin' do
     it "should return results" do
       @posts.first.more_like_this.results.should == [@posts[3], @posts[1]]
     end
+
+    it "should return results for specified classes" do
+      @posts.first.more_like_this(Post, PostWithAuto).results.to_set.should ==
+        Set[@posts_with_auto[0], @posts[1], @posts[3]]
+    end
   end
 
   describe 'more_like_this_ids()' do
     before :each do
       @posts = [
-	Post.create!(:title => 'Post123', :body => "one two three"),
-	Post.create!(:title => 'Post345', :body => "three four five"),
-	Post.create!(:title => 'Post456', :body => "four five six"),
-	Post.create!(:title => 'Post234', :body => "two three four"),
+        Post.create!(:title => 'Post123', :body => "one two three"),
+        Post.create!(:title => 'Post345', :body => "three four five"),
+        Post.create!(:title => 'Post456', :body => "four five six"),
+        Post.create!(:title => 'Post234', :body => "two three four"),
       ]
       @posts.each { |p| p.index! }
     end
@@ -397,5 +406,4 @@ describe 'ActiveRecord mixin' do
       @posts.first.more_like_this_ids.to_set.should == [@posts[3], @posts[1]].map { |post| post.id }.to_set
     end
   end
-  
 end
