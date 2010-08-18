@@ -40,7 +40,7 @@ module Sunspot
       def format_log_entry(message, dump = nil)
         log_subscriber =
           begin
-            ::Rails::LogSubscriber
+            ::Rails::Application.config
           rescue NameError
             ActiveRecord::Base
           end
