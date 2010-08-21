@@ -29,10 +29,11 @@ module Sunspot
       # Sunspot#new_search(), you will need to call this method after building the
       # query.
       #
-      def execute
+      def execute(options={})
         reset
         params = @query.to_params
-        @solr_result = @connection.request("/#{request_handler}", params)
+        @solr_result = @connection.request("/#{request_handler}", params, options)
+        @solr_result = Kernel.eval(@solr_result) if options[:method] == :post
         self
       end
 
