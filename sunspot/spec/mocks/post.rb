@@ -36,7 +36,7 @@ Sunspot.setup(Post) do
   text :backwards_title do
     title.reverse if title
   end
-  text :tags, :more_like_this => true
+  text :tags, :more_like_this => 2
   string :title, :stored => true
   integer :blog_id, :references => Blog
   integer :category_ids, :multiple => true

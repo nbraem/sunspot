@@ -50,7 +50,7 @@ module Mock
       @commits << Time.now
     end
 
-    def request(path, params)
+    def request(path, params, options)
       unless path == "/#{@expected_handler}"
         raise ArgumentError, "Expected request to #{@expected_handler} request handler"
       end

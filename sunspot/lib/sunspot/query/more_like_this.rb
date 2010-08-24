@@ -59,13 +59,17 @@ module Sunspot
           @params,
           :q => @document_scope.to_boolean_phrase
         )
-        params[:"mlt.fl"] = @fields.keys.join(",")
-        boosted_fields = @fields.values.select { |field| field.boost }
-        unless boosted_fields.empty?
-          params[:qf] = boosted_fields.map do |field|
-            field.to_boosted_field
-          end.join(' ')
-        end
+
+        has_boosts = false
+        params[:"mlt.fl"] = @fields.each_pair.map do |field, field_boost|
+          if field_boost.boost
+            has_boosts = true
+            field_boost.to_boosted_field
+          else
+            field
+          end
+        end.join(" ")
+        params[:qf] = params[:"mlt.fl"] if has_boosts
         params
       end
     end

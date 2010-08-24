@@ -21,7 +21,7 @@ describe 'more_like_this' do
 
   it 'should use more_like_this fields if no fields specified' do
     session.more_like_this(Post.new)
-    connection.searches.last[:"mlt.fl"].split(',').sort.should == %w(body_textsv tags_textv)
+    connection.searches.last[:"mlt.fl"].split(' ').sort.should == %w(body_textsv tags_textv^2.0)
   end
 
   it 'should use more_like_this fields if specified' do
@@ -35,8 +35,8 @@ describe 'more_like_this' do
     session.more_like_this(Post.new) do
       fields :body, :tags => 8
     end
-    connection.searches.last[:"mlt.fl"].split(',').sort.should == %w(body_textsv tags_textv)
-    connection.should have_last_search_with(:qf => "tags_textv^8")
+    connection.searches.last[:"mlt.fl"].split(' ').sort.should == %w(body_textsv tags_textv^8)
+    connection.should have_last_search_with(:qf => "body_textsv tags_textv^8")
   end
 
   it 'doesn\'t assign boosts to fields when not specified' do
