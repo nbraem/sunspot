@@ -10,7 +10,7 @@ module Sunspot
       def execute
         if @query.more_like_this.fields.empty?
           @setup.all_more_like_this_fields.each do |field|
-            @query.more_like_this.add_field(field)
+            @query.more_like_this.add_field(field, field.more_like_this_boost)
           end
         end
         super

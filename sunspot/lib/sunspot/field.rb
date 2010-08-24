@@ -5,13 +5,22 @@ module Sunspot
     attr_accessor :reference # Model class that the value of this field refers to
     attr_reader :boost
     attr_reader :indexed_name # Name with which this field is indexed internally. Based on public name and type or the +:as+ option.
+    attr_reader :more_like_this_boost
 
     #
     #
     def initialize(name, type, options = {}) #:nodoc
       @name, @type = name.to_sym, type
       @stored = !!options.delete(:stored)
-      @more_like_this = !!options.delete(:more_like_this)
+
+      more_like_this_option = options.delete(:more_like_this)
+      @more_like_this = !!more_like_this_option
+      begin
+        @more_like_this_boost = more_like_this_option.to_f
+      rescue NoMethodError
+        # do nothing, no boost
+      end
+
       @multiple ||= false
       set_indexed_name(options)
       raise ArgumentError, "Field of type #{type} cannot be used for more_like_this" unless type.accepts_more_like_this? or !@more_like_this
