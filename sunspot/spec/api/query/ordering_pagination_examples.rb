@@ -63,6 +63,13 @@ shared_examples_for 'sortable query' do
     connection.should have_last_search_with(:sort => 'score desc')
   end
 
+  it 'orders by function' do
+    search do
+      order_by(function { product(:average_rating, 10) })
+    end
+    connection.should have_last_search_with(:sort => 'product(average_rating_ft,10) asc')
+  end
+
   it 'throws an ArgumentError if a bogus order direction is given' do
     lambda do
       search do

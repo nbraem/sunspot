@@ -90,6 +90,21 @@ module Sunspot
           "score #{direction_for_solr}"
         end
       end
+
+      # 
+      # A FunctionSort sorts by the output of a function.
+      # See http://wiki.apache.org/solr/FunctionQuery#Sort_By_Function for details.
+      #
+      class FunctionSort < Abstract
+        def initialize(function_query, direction = nil)
+          super(direction)
+          @function = function_query
+        end
+
+        def to_param
+          "#{@function} #{direction_for_solr}"
+        end
+      end
     end
   end
 end
