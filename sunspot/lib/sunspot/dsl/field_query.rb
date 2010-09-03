@@ -6,6 +6,10 @@ module Sunspot
     # query DSL.
     #
     class FieldQuery < Scope
+
+      # accept function in order_by
+      include Functional
+
       def initialize(search, query, setup) #:nodoc:
         @search, @query = search, query
         super(query.scope, setup)
@@ -14,18 +18,27 @@ module Sunspot
       # Specify the order that results should be returned in. This method can
       # be called multiple times; precedence will be in the order given.
       #
+      # === Examples
+      #
+      #   Sunspot.search(Post) do
+      #     order_by :published_at, :asc
+      #     order_by function { abs(sub(:ratings_average, 2)) }
+      #   end
+      #
       # ==== Parameters
       #
-      # field_name<Symbol>:: the field to use for ordering
+      # field_name_or_function<Symbol>:: the field to use for ordering or a function
       # direction<Symbol>:: :asc or :desc (default :asc)
       #
-      def order_by(field_name, direction = nil)
+      def order_by(field_name_or_function, direction = nil)
         sort =
-          if special = Sunspot::Query::Sort.special(field_name)
+          if field_name_or_function.is_a?(Sunspot::Query::FunctionQuery)
+            Sunspot::Query::Sort::FunctionSort.new(field_name_or_function)
+          elsif special = Sunspot::Query::Sort.special(field_name_or_function)
             special.new(direction)
           else
             Sunspot::Query::Sort::FieldSort.new(
-              @setup.field(field_name), direction
+              @setup.field(field_name_or_function), direction
             )
           end
         @query.add_sort(sort)
