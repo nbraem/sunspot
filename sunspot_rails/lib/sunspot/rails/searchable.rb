@@ -325,7 +325,6 @@ module Sunspot #:nodoc:
         end
         
         def solr_execute_search(options = {})
-          options.assert_valid_keys(:include, :select)
           search = yield
           unless options.empty?
             search.build do |query|
@@ -337,7 +336,7 @@ module Sunspot #:nodoc:
               end
             end
           end
-          search.execute
+          search.execute(options)
         end
 
         def solr_execute_search_ids(options = {})
