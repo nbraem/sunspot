@@ -173,7 +173,7 @@ shared_examples_for "scoped query" do
     search do
       with post
     end
-    connection.should have_last_search_including(:fq, "id:Post\\ #{post.id}")
+    connection.should have_last_search_including(:fq, "id:(Post\\ #{post.id})")
   end
 
   it 'includes multiple objects passed as varargs by object identity' do
@@ -182,9 +182,7 @@ shared_examples_for "scoped query" do
       with post1, post2
     end
     connection.should have_last_search_including(
-      :fq,
-      "id:Post\\ #{post1.id}",
-      "id:Post\\ #{post2.id}"
+      :fq, "id:(Post\\ #{post1.id} OR Post\\ #{post2.id})"
     )
   end
 
@@ -194,9 +192,7 @@ shared_examples_for "scoped query" do
       with posts
     end
     connection.should have_last_search_including(
-      :fq,
-      "id:Post\\ #{posts.first.id}",
-      "id:Post\\ #{posts.last.id}"
+      :fq, "id:(Post\\ #{posts.first.id} OR Post\\ #{posts.last.id})"
     )
   end
 
@@ -205,7 +201,7 @@ shared_examples_for "scoped query" do
     search do
       without post
     end
-    connection.should have_last_search_including(:fq, "-id:Post\\ #{post.id}")
+    connection.should have_last_search_including(:fq, "-id:(Post\\ #{post.id})")
   end
 
   it 'excludes multiple objects passed as varargs by object identity' do
@@ -215,8 +211,7 @@ shared_examples_for "scoped query" do
     end
     connection.should have_last_search_including(
       :fq,
-      "-id:Post\\ #{post1.id}",
-      "-id:Post\\ #{post2.id}"
+      "-id:(Post\\ #{post1.id} OR Post\\ #{post2.id})"
     )
   end
 
@@ -227,8 +222,7 @@ shared_examples_for "scoped query" do
     end
     connection.should have_last_search_including(
       :fq,
-      "-id:Post\\ #{posts.first.id}",
-      "-id:Post\\ #{posts.last.id}"
+      "-id:(Post\\ #{posts.first.id} OR Post\\ #{posts.last.id})"
     )
   end
 

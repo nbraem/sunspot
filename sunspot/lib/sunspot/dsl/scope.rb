@@ -201,15 +201,14 @@ module Sunspot
             @scope.add_shorthand_restriction(negated, @setup.field(field_name.to_sym), value)
           end
         else
-          instances = args
-          instances.flatten.each do |instance|
-            @scope.add_restriction(
-              negated,
-              IdField.instance,
-              Sunspot::Query::Restriction::EqualTo,
-              Sunspot::Adapters::InstanceAdapter.adapt(instance).index_id
-            )
-          end
+          instances = args.flatten
+          @scope.add_restriction(
+            negated, 
+            IdField.instance, 
+            Sunspot::Query::Restriction::AnyOf, 
+            instances.flatten.map { |instance|
+              Sunspot::Adapters::InstanceAdapter.adapt(instance).index_id }
+          )
         end
       end
 
