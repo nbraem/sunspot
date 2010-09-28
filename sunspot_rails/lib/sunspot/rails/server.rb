@@ -41,7 +41,7 @@ module Sunspot
       # Directory in which to store PID files
       #
       def pid_dir
-        File.join(::Rails.root, 'tmp', 'pids')
+        configuration.pid_path
       end
 
       # 
@@ -59,7 +59,7 @@ module Sunspot
       # String:: data_path
       #
       def solr_data_dir
-        File.join(solr_home, 'data', ::Rails.env)
+        configuration.data_path
       end
 
       # 
