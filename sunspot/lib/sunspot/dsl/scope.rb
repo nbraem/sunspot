@@ -17,10 +17,10 @@ module Sunspot
       # 
       # Build a positive restriction. This method can take three forms: equality
       # restriction, restriction by another restriction, or identity
-      # restriction. 
+      # restriction.
       # In the first two forms, the first argument is a field name. If only a
       # field name is specified, this method returns another DSL object which
-      # presents methods for attaching various restriction types. 
+      # presents methods for attaching various restriction types.
       # With two arguments, this creates a shorthand restriction: if the second
       # argument is a scalar, an equality restriction is created; if it is a
       # Range, a between restriction will be created; and if it is an Array, an
@@ -72,7 +72,7 @@ module Sunspot
       #   end
       #
       # Restriction by identity:
-      #   
+      #
       #   Sunspot.search(Post) do
       #     with(some_post_instance)
       #   end
@@ -81,7 +81,7 @@ module Sunspot
         add_restriction(false, *args)
       end
 
-      # 
+      #
       # Build a negative restriction (exclusion). This method works the same way
       # asthe #with method.
       #
@@ -203,9 +203,9 @@ module Sunspot
         else
           instances = args.flatten
           @scope.add_restriction(
-            negated, 
-            IdField.instance, 
-            Sunspot::Query::Restriction::AnyOf, 
+            negated,
+            IdField.instance,
+            Sunspot::Query::Restriction::AnyOf,
             instances.flatten.map { |instance|
               Sunspot::Adapters::InstanceAdapter.adapt(instance).index_id }
           )

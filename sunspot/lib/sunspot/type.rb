@@ -1,4 +1,9 @@
 require 'singleton'
+begin
+  require 'geohash'
+rescue LoadError => e
+  require 'pr_geohash'
+end
 
 module Sunspot
   # 
@@ -349,7 +354,7 @@ module Sunspot
       end
 
       def to_indexed(value)
-        encode(value.lat, value.lng, 12)
+        GeoHash.encode(value.lat.to_f, value.lng.to_f, 12)
       end
     end
 

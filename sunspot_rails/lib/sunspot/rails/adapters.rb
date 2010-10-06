@@ -48,7 +48,7 @@ module Sunspot #:nodoc:
         # 
         def load(id)
           @clazz.first(options_for_find.merge(
-            :conditions => { @clazz.primary_key => id.to_i}
+            :conditions => { @clazz.primary_key => id}
           ))
         end
 
@@ -65,7 +65,7 @@ module Sunspot #:nodoc:
         #
         def load_all(ids)
           @clazz.all(options_for_find.merge(
-            :conditions => { @clazz.primary_key => ids.map { |id| id.to_i }}
+            :conditions => { @clazz.primary_key => ids.map { |id| id }}
           ))
         end
         
@@ -75,7 +75,7 @@ module Sunspot #:nodoc:
           options = {}
           options[:include] = @include unless @include.blank?
           options[:select]  =  @select unless  @select.blank?
-          return options
+          options
         end
       end
     end
