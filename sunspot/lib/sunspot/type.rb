@@ -127,6 +127,10 @@ module Sunspot
       def cast(string) #:nodoc:
         string
       end
+
+      def accepts_more_like_this?
+        true
+      end
     end
     register(StringType, String)
 
