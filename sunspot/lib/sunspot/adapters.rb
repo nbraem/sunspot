@@ -135,6 +135,10 @@ module Sunspot
           "#{class_name} #{id}"
         end
 
+        def class_name_id_from(index_id) #:nodoc:
+          index_id.match(/([^ ]+) (.+)/)[1..2]
+        end
+
         protected
 
         # Lazy-initialize the hash of registered instance adapters

@@ -3,7 +3,8 @@ require File.join(File.dirname(__FILE__), 'super_class')
 
 class Post < SuperClass
   attr_accessor :title, :body, :blog_id, :published_at, :ratings_average,
-                :author_name, :featured, :expire_date, :coordinates, :tags
+                :author_name, :featured, :expire_date, :coordinates, :tags,
+                :blog, :comments, :first_comment
   alias_method :featured?, :featured
 
   def category_ids
@@ -78,7 +79,11 @@ Sunspot.setup(Post) do
 
   string :legacy_array, :as => :legacy_array_field_sm, :multiple => true do
     ['first string', 'second string']
- 	end
+  end
+
+  reference :blog
+  reference :comments, :multiple => true
+  reference :first_comment, :stored => true
 end
 
 class PhotoPost < Post
