@@ -69,6 +69,13 @@ module Sunspot
     end
 
     #
+    # Batch version of cast.
+    #
+    def cast_all(values)
+      @type.cast_all(values)
+    end
+
+    # 
     # Whether this field accepts multiple values.
     #
     # ==== Returns
