@@ -418,6 +418,10 @@ module Sunspot
         raise ArgumentError("cast_all can only cast references of same type") if class_names.uniq.length > 1
         Adapters::DataAccessor.create(Sunspot::Util.full_const_get(class_names[0])).load_all(ids)
       end
+
+      def accepts_more_like_this?
+        true
+      end
     end
 
     class ClassType < AbstractType
