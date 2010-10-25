@@ -357,4 +357,26 @@ describe 'faceting', :type => :search do
     result.facet(:blog_id).rows.each { |row| row.instance }
     (Blog.query_count - query_count).should == 1
   end
+
+  it 'returns reference facet' do
+    blog1, blog2 = Blog.new(:id => 1), Blog.new(:id => 2)
+    stub_facet(:blog_s, "Blog 1" => 1, "Blog 2" => 2)
+    result = session.search Post do
+      facet :blog
+    end
+    facet_values(result, :blog).should include(blog1, blog2)
+  end
+
+  it 'loads facet rows in batch' do
+    blog1, blog2 = Blog.new(:id => 1), Blog.new(:id => 2)
+    stub_facet(:blog_s, "Blog 1" => 1, "Blog 2" => 2)
+    result = session.search Post do
+      facet :blog
+    end
+    mock_adapter = MockAdapter::DataAccessor.new(Blog)
+    Sunspot::Adapters::DataAccessor.should_receive(:create).once.with(Blog).and_return(mock_adapter)
+    mock_adapter.should_receive(:load_all).once.with(["2", "1"]).and_return([blog2, blog1])
+    mock_adapter.should_not_receive(:load)
+    facet_values(result, :blog).should include(blog1, blog2)
+  end
 end
