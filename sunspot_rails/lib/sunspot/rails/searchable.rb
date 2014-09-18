@@ -224,7 +224,7 @@ module Sunspot #:nodoc:
         #   Post.index(:include => :author) 
         #
         def solr_index(opts={})
-          options = { :batch_size => 500, :batch_commit => true, :include => self.sunspot_options[:include], :first_id => 0}.merge(opts)
+          options = { :batch_size => 500, :batch_commit => true, :include => self.sunspot_options[:include], :first_id => '0'}.merge(opts)
           unless options[:batch_size]
             Sunspot.index!(all(:include => options[:include]))
           else
@@ -283,7 +283,7 @@ module Sunspot #:nodoc:
 	  options = { 
 	    :batch_commit => true, 
 	    :include => [], 
-	    :first_id => 0
+	    :first_id => '0'
 	    }.merge(opts)
 	  unless options[:batch_size]
 	    Sunspot.index!(all(
